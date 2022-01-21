@@ -4,9 +4,16 @@
  * @returns {function} - function-getter which allow get value from object by set path
  */
 export function createGetter(path) {
+  const splitedPath = path.split('.');
   return function (product){
-    let result = {...product};
-    path.split('.').map(item => result && result[item] ? result = result[item] : result = undefined);
+    let productCopy = {...product};
+    let result;
+    splitedPath.forEach(item => {
+      if (path && productCopy){
+        productCopy = productCopy[item];
+        result = productCopy;
+      }
+    });
     return result;
   };
 }
