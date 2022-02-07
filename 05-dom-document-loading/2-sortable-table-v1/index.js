@@ -21,7 +21,7 @@ export default class SortableTable {
       data = [...this.data];
     }
 
-    this.subElements.body.innerHTML = data.map((product) => {
+    this.subElements.body.innerHTML = data.map(product => {
       let productMarkup = `<a href="/products/${product.id}" class="sortable-table__row">`;
 
       const productRow = this.headerConfig.map((field) => {

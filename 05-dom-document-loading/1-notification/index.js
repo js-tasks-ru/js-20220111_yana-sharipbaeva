@@ -9,7 +9,7 @@ export default class NotificationMessage {
   static isActive = false;
 
   getTemplate() {
-    return `<div class="notification ${this.type} style="--value: ${this.duration / 1000 + 's'}">
+    return `<div class="notification ${this.type}" style="--value: ${this.duration / 1000 + 's'}">
                 <div class="timer"></div>
                 <div class="inner-wrapper">
                   <div class="notification-header">${this.type}</div>
@@ -26,20 +26,22 @@ export default class NotificationMessage {
   }
 
   show (target) {
-    if (!NotificationMessage.isActive) {
-      if (target) {
-        target.append(this.element);
-
-      } else {
-        document.body.append(this.element);
-      }
-      NotificationMessage.isActive = true;
+    if (NotificationMessage.isActive) {
+      NotificationMessage.isActive.remove();
     }
 
-    setTimeout(function() {
+    if (target) {
+      target.append(this.element);
+
+    } else {
+      document.body.append(this.element);
+    }
+
+/*    setTimeout(function() {
       this.remove();
-      NotificationMessage.isActive = false;
-    }.bind(this), this.duration);
+    }.bind(this), this.duration);*/
+
+    NotificationMessage.isActive = this;
   }
 
   remove() {
