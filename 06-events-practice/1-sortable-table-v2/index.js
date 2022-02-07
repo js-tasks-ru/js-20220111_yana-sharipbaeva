@@ -16,9 +16,14 @@ export default class SortableTable {
   createArrow () {
     const arrowEl = document.createElement('div');
     arrowEl.innerHTML = `<span data-element="arrow" class="sortable-table__sort-arrow">
-          <span class="sort-arrow"></span>
-        </span>`;
+                            <span class="sort-arrow"></span>
+                        </span>`;
+
     return arrowEl.firstElementChild;
+  }
+
+  getSortType() {
+    return this.headerConfig.filter(item => item.id === this.id)[0]?.sortType;
   }
 
   createHeader () {
@@ -36,25 +41,12 @@ export default class SortableTable {
       if (item.id === this.id) {
         cell.append(this.createArrow());
       }
-
-      cell.addEventListener('pointerdown', () => {
-        const arrowEl = this.element.querySelector('[data-element="arrow"]');
-        if (arrowEl) {
-          arrowEl.remove();
-        }
-
-        this.id = item.id;
-        this.sort(item.sortType);
-        this.changeOrder();
-        cell.append(this.createArrow());
-        cell.setAttribute('data-order', this.order);
-      });
     }).join('');
   }
 
   createBody (data) {
     if (!data) {
-      const sortType = this.headerConfig.filter(item => item.id === this.id)[0].sortType;
+      const sortType = this.getSortType();
       this.sort(sortType);
     } else {
       this.sortedData = data;
@@ -72,7 +64,6 @@ export default class SortableTable {
       }).join('');
 
       productMarkup += productRow;
-
       productMarkup += `</a>`;
 
       return productMarkup;
@@ -89,6 +80,24 @@ export default class SortableTable {
     `;
   }
 
+  removeArrow() {
+    const arrowEl = this.element.querySelector('[data-element="arrow"]');
+    if (arrowEl) {
+      arrowEl.remove();
+    }
+  }
+
+  onColumnClick(event) {
+    this.removeArrow();
+    const targetElement = event.target?.closest('.sortable-table__cell');
+    this.id = targetElement?.dataset.id;
+    this.order = targetElement?.dataset.order;
+    this.sort(this.getSortType());
+    this.changeOrder();
+    targetElement.append(this.createArrow());
+    targetElement.setAttribute('data-order', this.order);
+  }
+
   render() {
     const element = document.createElement('div');
     element.innerHTML = this.getTemplate();
@@ -97,6 +106,8 @@ export default class SortableTable {
     this.subElements.body = this.element.querySelector('[data-element="body"]');
     this.createHeader();
     this.createBody();
+
+    this.subElements.header.addEventListener('pointerdown', this.onColumnClick.bind(this));
   }
 
   remove() {
@@ -104,6 +115,7 @@ export default class SortableTable {
   }
 
   destroy() {
+    this.subElements.header.removeEventListener('pointerdown', this.onColumnClick.bind(this));
     this.remove();
   }
 
