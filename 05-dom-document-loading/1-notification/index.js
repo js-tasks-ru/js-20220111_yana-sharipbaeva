@@ -37,9 +37,9 @@ export default class NotificationMessage {
       document.body.append(this.element);
     }
 
-/*    setTimeout(function() {
+    setTimeout(function() {
       this.remove();
-    }.bind(this), this.duration);*/
+    }.bind(this), this.duration);
 
     NotificationMessage.isActive = this;
   }
