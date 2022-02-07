@@ -6,20 +6,14 @@ export default class SortableTable {
     this.render();
   }
 
-  createHeaderCells() {
-    return this.headerConfig.map(item => {
+  createHeader () {
+    this.subElements.header.innerHTML =  [...this.headerConfig].map(item => {
       return `
-         <div class="sortable-table__cell" data-id="${item.id}" data-sortable="${item.sortable}">
+         <div class="sortable-table__cell"  data-id="${item.id}" data-sortable="${item.sortable}">
             <span>${item.title}</span>
         </div>
       `;
     }).join('');
-  }
-
-  createHeader () {
-    this.subElements.header.innerHTML = `<div data-element="header" class="sortable-table__header sortable-table__row">
-       ${this.createHeaderCells()}
-      </div>`;
   }
 
   createBody (data) {
@@ -39,9 +33,7 @@ export default class SortableTable {
       }).join('');
 
       productMarkup += productRow;
-
       productMarkup += `</a>`;
-
       return productMarkup;
     }).join('');
   }
@@ -83,6 +75,7 @@ export default class SortableTable {
         } else if (param === 'desc') {
           return b[fieldValue].localeCompare(a[fieldValue], ['ru', 'en'], {caseFirst: 'upper'});
         }
+
       } else {
         if (sortType === 'number') {
           if (param === 'asc') {
@@ -93,7 +86,7 @@ export default class SortableTable {
         }
       }
 
-    }, param);
+    });
 
     this.createBody(sorted);
   }
