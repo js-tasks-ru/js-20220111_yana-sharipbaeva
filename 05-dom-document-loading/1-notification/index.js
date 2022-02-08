@@ -6,7 +6,7 @@ export default class NotificationMessage {
     this.render();
   }
 
-  static isActive = false;
+  static isActive;
 
   getTemplate() {
     return `<div class="notification ${this.type}" style="--value: ${this.duration / 1000 + 's'}">
@@ -25,21 +25,16 @@ export default class NotificationMessage {
     this.element = element.firstElementChild;
   }
 
-  show (target) {
+  show (target = document.body) {
     if (NotificationMessage.isActive) {
       NotificationMessage.isActive.remove();
     }
 
-    if (target) {
-      target.append(this.element);
+    target.append(this.element);
 
-    } else {
-      document.body.append(this.element);
-    }
-
-    setTimeout(function() {
+    setTimeout(() => {
       this.remove();
-    }.bind(this), this.duration);
+    }, this.duration);
 
     NotificationMessage.isActive = this;
   }
