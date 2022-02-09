@@ -8,14 +8,15 @@ export default class ColumnChart {
     range= {
     from: new Date(),
     to: new Date()
-  }, label = '', link = '', value = 0, data= {}} = {}) {
+  }, label = '', link = '', value = 0, data= {}, formatHeading} = {}) {
     this.url = url;
     this.label = label;
     this.link = link;
-    this.value = value;
+    this.value =  value;
     this.range = range;
     this.data = data;
     this.chartHeight = 50;
+    this.formatHeading = formatHeading;
     this.render();
   }
 
@@ -49,7 +50,7 @@ export default class ColumnChart {
             ${this.createLink()}
             </div>
             <div class="column-chart__container">
-              <div data-element="header" class="column-chart__header">${this.formatHeading(this.value)}</div>
+              <div data-element="header" class="column-chart__header">${this.checkFormatHeading()}</div>
               <div data-element="body" class="column-chart__chart">${this.createChart()}</div>
             </div>
         </div>
@@ -67,10 +68,6 @@ export default class ColumnChart {
 
   }
 
-  formatHeading (data) {
-    return this.settings && this.settings.formatHeading ? `USD ${data}` : data;
-  }
-
   createLink() {
     return this.link ? `<a href="${this.link}" class="column-chart__link">View all</a>` : '';
   }
@@ -86,6 +83,10 @@ export default class ColumnChart {
 
   getTooltip (item) {
     return Math.round(this.height(item) * 2);
+  }
+
+  checkFormatHeading () {
+    return this.formatHeading ? this.formatHeading(this.value) : this.value;
   }
 
   remove() {
