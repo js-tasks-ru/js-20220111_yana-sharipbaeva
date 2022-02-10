@@ -28,7 +28,6 @@ export default class SortableTable {
     this.subElements = this.getSubElements();
     this.createHeader();
     this.subElements.header.addEventListener('pointerdown', this.onColumnClick.bind(this));
-    const table = document.querySelector('.sortable-table');
     window.addEventListener('scroll', this.onScrollEvent.bind(this));
     await this.getData();
   }
@@ -75,9 +74,10 @@ export default class SortableTable {
     url.searchParams.set('_order', order);
     url.searchParams.set('_sort', id);
     const data = await fetchJson(url.toString());
-
     this.data = this.isScroling ? [...this.data, ...data] : data;
     this.createBody(this.data);
+
+    return this.data;
   }
 
   createArrow () {
