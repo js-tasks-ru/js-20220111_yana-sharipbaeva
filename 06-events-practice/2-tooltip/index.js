@@ -19,11 +19,17 @@ class Tooltip {
     document.body.append(this.element);
   }
 
+  onMouseMove(e) {
+    const shift = 10;
+    this.element.style.left = e.clientX + shift + 'px';
+    this.element.style.top = e.clientY + + shift + 'px';
+  }
+
   addTooltip(event) {
     if (event.target.dataset.tooltip) {
       this.element.innerHTML = event.target.dataset.tooltip;
       document.body.append(this.element);
-      document.removeEventListener('pointerout', (e) => this.remove(e));
+      document.body.addEventListener('mousemove', (e ) => this.onMouseMove(e));
     }
   }
 
@@ -35,6 +41,8 @@ class Tooltip {
   remove() {
     this.element.remove();
     document.removeEventListener('pointerover', (e) => this.addTooltip(e));
+    document.removeEventListener('mousemove', (e) => this.onMouseMove(e));
+    document.addEventListener('pointerout', (e) => this.remove(e));
   }
 
   destroy() {
