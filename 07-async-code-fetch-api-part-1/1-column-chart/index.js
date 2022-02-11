@@ -59,7 +59,7 @@ export default class ColumnChart {
 
   createChart() {
     const data = Object.values({...this.data});
-    if (data.length !== 0) {
+    if (data.length) {
       return [...data].map(item => `
         <div style="--value: ${this.getValue(item)}" data-tooltip="${this.getTooltip(item)}%"></div>`).join('');
     } else {

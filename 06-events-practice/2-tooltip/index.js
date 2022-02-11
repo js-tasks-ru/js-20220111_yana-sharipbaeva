@@ -1,9 +1,10 @@
 class Tooltip {
   constructor() {
+    this.render();
+    this.addTooltip = this.addTooltip.bind(this);
+    this.onMouseMove = this.onMouseMove.bind(this);
     if (!Tooltip._instance) {
       Tooltip._instance = this;
-      this.render();
-      this.addTooltip = this.addTooltip.bind(this);
     }
     return Tooltip._instance;
   }

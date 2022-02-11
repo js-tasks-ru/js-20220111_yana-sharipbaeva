@@ -12,13 +12,15 @@ export default class SortableTable {
     this.url = url;
     this.start = 0;
     this.end = 10;
+    this.itemsToUpload = 10;
     this.data = [];
     this.order = 'desc';
     this.sortType = 'title';
     this.isSortLocally = isSortLocally;
     this.sorted = sorted;
-    this.onScrollEvent = this.onScrollEvent.bind(this);
     this.render();
+    this.onColumnClick = this.onColumnClick.bind(this);
+    this.onScrollEvent = this.onScrollEvent.bind(this);
   }
 
   async render() {
@@ -27,8 +29,8 @@ export default class SortableTable {
     this.element = element.firstElementChild;
     this.subElements = this.getSubElements();
     this.createHeader();
-    this.subElements.header.addEventListener('pointerdown', this.onColumnClick.bind(this));
-    window.addEventListener('scroll', this.onScrollEvent.bind(this));
+    this.subElements.header.addEventListener('pointerdown', this.onColumnClick);
+    window.addEventListener('scroll', this.onScrollEvent);
     await this.getData();
   }
 
@@ -175,8 +177,8 @@ export default class SortableTable {
     const offset = documentElement.scrollTop + window.innerHeight;
     const height = documentElement.offsetHeight;
     if (offset >= height) {
-      this.start = this.start + 10;
-      this.end = this.end + 10;
+      this.start = this.start + this.itemsToUpload;
+      this.end = this.end + this.itemsToUpload;
       this.isScroling = true;
       this.getData();
     }
@@ -205,10 +207,12 @@ export default class SortableTable {
 
   remove() {
     this.element.remove();
+
   }
 
   destroy() {
-    this.subElements.header.removeEventListener('pointerdown', this.onColumnClick.bind(this));
+    window.removeEventListener('scroll', this.onScrollEvent);
+    this.subElements.header.removeEventListener('pointerdown', this.onColumnClick);
     this.remove();
   }
 }
