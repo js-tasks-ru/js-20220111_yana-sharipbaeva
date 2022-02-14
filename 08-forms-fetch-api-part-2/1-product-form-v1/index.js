@@ -31,14 +31,15 @@ export default class ProductForm {
   }
 
   async render () {
-    if (this.productId) {
-      const formData = await this.getData();
-      this.formData = formData[0];
-    } else{
-      this.formData = this.defaultFormData;
-    }
+    const categoriesPromise = this.getCategories();
+    const productsPromise = this.productId ? this.getProducts(this.productId)
+      : Promise.resolve([this.defaultFormData]);
 
-    this.categories = await this.getCategories();
+    const [categories, productResponse] = await Promise.all([categoriesPromise, productsPromise]);
+    const [productData] = productResponse;
+
+    this.formData = productData;
+    this.categories = categories;
 
     const element = document.createElement('div');
     element.innerHTML = this.getTemplate();
@@ -50,30 +51,28 @@ export default class ProductForm {
     return this.element;
   }
 
-  async getData() {
+  getProducts(productId) {
     const url = new URL('api/rest/products', BACKEND_URL);
-    url.searchParams.set('id', this.productId);
-    const formData = fetchJson(url.toString());
-    return formData;
+    url.searchParams.set('id', productId);
+
+    return fetchJson(url.toString());
   }
 
-  async getCategories() {
+  getCategories() {
     const url = new URL('api/rest/categories', BACKEND_URL);
     url.searchParams.set('_sort', 'weight');
     url.searchParams.set('_refs', 'subcategory');
-    const categories = await fetchJson(url.toString());
-    this.categories = categories;
 
-    return this.categories;
+    return fetchJson(url.toString());
   }
 
   createSubcategories() {
-    const selectStart = `<select class="form-control" id="subcategory" value="" name="subcategory">`;
+    const selectStart = `<select class="form-control" id="subcategory" value="${this.formData.subcategory}" name="subcategory">`;
     const selectEnd = `</select>`;
 
      const options = [...this.categories].map(item => {
         return item.subcategories && item.subcategories.map(subItem => {
-          const selOption = this.defaultFormData.subcategory === subItem.id ? 'selected' : '';
+          const selOption = this.formData.subcategory === subItem.id ? 'selected' : '';
             return `<option ${selOption} value="${subItem.id}">${item.title} &gt; ${subItem.title}</option>`;
         })
       }).flat().join('');
@@ -82,6 +81,8 @@ export default class ProductForm {
   }
 
   getTemplate() {
+    const {title, description, status, price, quantity, discount} = this.formData;
+
     return `<div class="product-form">
               <form data-element="productForm" class="form-grid">
                 <div class="form-group form-group__half_left">
@@ -90,7 +91,7 @@ export default class ProductForm {
                     <input
                     required=""
                     id="title"
-                    value=""
+                    value="${title}"
                     class="form-control"
                     placeholder="title"
                     type="text"
@@ -108,7 +109,7 @@ export default class ProductForm {
                    class="form-control"
                    name="description"
                    data-element="productDescription"
-                   placeholder="Описание товара"></textarea>
+                   placeholder="Описание товара">${description}</textarea>
                 </div>
                 <div class="form-group form-group__wide" data-element="sortable-list-container">
                   <label class="form-label">Фото</label>
@@ -126,7 +127,7 @@ export default class ProductForm {
                     <label class="form-label">Цена ($)</label>
                     <input
                       required=""
-                      value=""
+                      value="${price}"
                       type="number"
                       name="price"
                       class="form-control"
@@ -140,7 +141,7 @@ export default class ProductForm {
                       id="discount"
                       required=""
                       type="number"
-                      value=""
+                      value="${discount}"
                       name="discount"
                       class="form-control"
                       placeholder="0"
@@ -153,7 +154,7 @@ export default class ProductForm {
                      id="quantity"
                      required=""
                      type="number"
-                     value=""
+                     value="${quantity}"
                      class="form-control"
                      name="quantity"
                      placeholder="1"
@@ -161,7 +162,7 @@ export default class ProductForm {
                 </div>
                 <div class="form-group form-group__part-half">
                   <label class="form-label">Статус</label>
-                  <select class="form-control" id="status" name="status" value="">
+                  <select class="form-control" id="status" name="status" value="${status}">
                     <option value="1">Активен</option>
                     <option value="0">Неактивен</option>
                   </select>
@@ -178,8 +179,8 @@ export default class ProductForm {
   getImagesList() {
         const ulStart = `<ul class="sortable-list">`;
         const ulEnd = `</ul>`;
-        if (this.formData && this.formData.images) {
-          const imagesList = this.formData && this.formData.images.map(item => {
+        if (this.formData.images) {
+          const imagesList = [...this.formData.images].map(item => {
             return `<li class="products-edit__imagelist-item sortable-list__item" style="">
                 <input type="hidden" name="url" value="${item.url}">
                 <input type="hidden" name="source" value="${item.source}">
@@ -259,27 +260,24 @@ export default class ProductForm {
 
   getFormData() {
     const toNums = ['quantity', 'status', 'price', 'discount'];
-    let values = {};
-    const {productForm} =  this.subElements;
+    const values = {};
+    const { productForm } = this.subElements;
 
-
-    const getValue = field => productForm.querySelector(`[name=${field}]`);
+    const formData = new FormData(productForm);
     for (const key of Object.keys(this.defaultFormData)) {
-      const field = getValue(key);
-      if (key !== 'images'){
-        values[key] = toNums.includes(key) ? parseInt(field.value) : field.value;
+      if (key !== 'images') {
+        values[key] = toNums.includes(key) ? parseInt(formData.get(key)) : formData.get(key);
       }
     }
 
     if (this.productId) {
       values.id = this.productId;
     }
+
     const images = this.subElements['imageListContainer'].querySelectorAll('.sortable-list__item');
     values.images = [...images].map(item => {
       return { url: item.querySelector('[name="url"]').value, source: item.querySelector('[name="source"]').value }
     });
-
-
 
     return values;
   }
@@ -311,8 +309,8 @@ export default class ProductForm {
   }
 
   updateImageList (name) {
-    this.defaultFormData.images = [...this.defaultFormData.images, {url: this.uploadedImage.data.link, source: name}];
-    const creatListMarkup = this.getImagesList(this.defaultFormData.images);
+    this.formData.images = [...this.formData.images, {url: this.uploadedImage.data.link, source: name}];
+    const creatListMarkup = this.getImagesList();
     this.subElements['imageListContainer'].innerHTML = creatListMarkup;
   }
 
@@ -338,5 +336,7 @@ export default class ProductForm {
     this.remove();
     this.element = null;
     this.subElements = null;
+    this.subElements['productForm'].removeEventListener('submit', (e) => this.onSubmit(e));
+    this.element.querySelector('[name="uploadImage"]').removeEventListener('click', this.uploadImage.bind(this));
   }
 }
