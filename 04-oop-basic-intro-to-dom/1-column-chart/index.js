@@ -5,6 +5,7 @@ export default class ColumnChart {
     this.link = settings?.link || '';
     this.label = settings?.label || '';
     this.value = settings?.value || 0;
+    this.formatHeading = settings?.formatHeading ?  settings.formatHeading(this.value) : this.value;
     this.chartHeight = 50;
     this.render();
   }
@@ -15,7 +16,7 @@ export default class ColumnChart {
                 ${this.createLink()}
                 </div>
                   <div class="column-chart__container ">
-                      <div data-element="header" class="column-chart__header">${this.formatHeading(this.value)}</div>
+                      <div data-element="header" class="column-chart__header">${this.formatHeading}</div>
                       <div data-element="body" class="column-chart__chart">${this.createChart()}</div>
                   </div>
              </div>
@@ -26,8 +27,8 @@ export default class ColumnChart {
         <div style="--value: ${this.getValue(item)}" data-tooltip="${this.getTooltip(item)}%"></div>`).join('');
   }
 
-  formatHeading (data) {
-    return this.settings && this.settings.formatHeading ? `USD ${data}` : data;
+  checkFormatHeading () {
+    return this.formatHeading ? this.formatHeading(this.value) : this.value;
   }
 
   createLink() {
