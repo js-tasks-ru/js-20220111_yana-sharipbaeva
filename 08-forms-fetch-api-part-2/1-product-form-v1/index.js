@@ -334,9 +334,9 @@ export default class ProductForm {
 
   destroy() {
     this.remove();
-    this.element = null;
-    this.subElements = null;
     this.subElements['productForm'].removeEventListener('submit', (e) => this.onSubmit(e));
     this.element.querySelector('[name="uploadImage"]').removeEventListener('click', this.uploadImage.bind(this));
+    this.element = null;
+    this.subElements = null;
   }
 }
