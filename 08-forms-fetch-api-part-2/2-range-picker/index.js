@@ -183,9 +183,20 @@ export default class RangePicker {
 
     } else if (this.selectedFrom && !this.selectedTo && e.target.dataset.value) {
       window.localStorage.setItem('to', e.target.dataset.value);
-      this.selectedTo = e.target.dataset.value;
+
       this.dispatchEvent('date-select');
       this.removeCalendar();
+      this.selectedTo = e.target.dataset.value;
+
+      if (new Date(this.selectedFrom).getTime() > new Date(this.selectedTo).getTime()) {
+        const selectedFrom = this.selectedTo;
+        const selectedTo = this.selectedFrom;
+        this.selectedFrom =  selectedFrom;
+        this.selectedTo =  selectedTo;
+        window.localStorage.setItem('from', selectedFrom);
+        window.localStorage.setItem('to', selectedTo);
+      }
+
       this.updateDates();
       this.hideSelector();
       this.selectorOpen = false;
